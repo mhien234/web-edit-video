@@ -1,0 +1,2 @@
+{"name": "Theo nhạc · chậm", "group": "music", "description": "Đổi cảnh mỗi 4 beat, màu phim mềm.",
+ "mode": "beat", "beats_per_cut": 4, "min_clip": 0.5, "look": "soft-film", "width": 1080, "height": 1920, "fps": 30}

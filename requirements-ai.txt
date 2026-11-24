@@ -1,0 +1,9 @@
+# AI phụ đề – website tự cài file này khi bạn bấm “Tạo phụ đề bằng AI” -> “Cài ngay”.
+# Cài tay (nếu muốn):  .venv\Scripts\python -m pip install -r requirements-ai.txt
+faster-whisper>=1.0      # nhận diện giọng nói (Whisper chạy trên CPU)
+deep-translator>=1.11    # dịch phụ đề bằng Google Dịch, cần mạng
+edge-tts>=6.1            # giọng đọc AI 10 thứ tiếng (miễn phí, cần mạng)
+onnxruntime>=1.17        # xóa nền bằng model RVM (chạy CPU); model .onnx tải riêng ~100 MB
+
+# Tùy chọn – dịch offline (nặng, cài thêm PyTorch ~1GB; gói tiếng Việt có thể không có sẵn):
+#   pip install argostranslate  &&  python -m backend.setup_ai en vi

@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Creative Motion Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lexend:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Trang chủ: danh sách dự án đã làm, bố cục kiểu sidebar + banner (lấy cảm hứng từ các
+   app dựng video phổ biến). Trang giới thiệu ngắn gọn nằm ở gioi-thieu.html. */
+:root{
+  --bg:#0b0b0e; --sunken:#0e0e12; --surface:#16161b; --surface-2:#1c1c22; --hover:#24242b;
+  --ink:#ecedf1; --ink-2:#c8cad2; --muted:#8d8f9a; --faint:#5f616b;
+  --line:#272830; --line-2:#34353f;
+  --violet:#8b6dff; --violet-ink:#a98cff; --violet-soft:#2a2140; --red:#ff6b6b;
+  --solid-bg:#ecedf1; --solid-ink:#0b0b0e;
+  --display:"Lexend",system-ui,sans-serif; --body:"Inter",system-ui,sans-serif;
+  --rail:220px;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--violet);outline-offset:2px}
+.icon{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.icon.sm{width:15px;height:15px}
+[hidden]{display:none!important}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:40px;padding:0 18px;border-radius:999px;border:1px solid transparent;font-weight:600;font-size:13.5px;text-decoration:none;white-space:nowrap;transition:background .15s}
+.btn-solid{background:var(--solid-bg);color:var(--solid-ink)}
+.btn-solid:hover{background:#fff}
+.btn-light{background:var(--surface-2);border-color:var(--line)}
+.btn-light:hover{background:var(--hover);border-color:var(--line-2)}
+.btn-sm{height:32px;padding:0 12px;font-size:12.5px}
+.btn-danger{color:var(--red)}
+.btn-danger:hover{background:#3a1f24;border-color:#5c2b33}
+
+/* ---------- khung tổng: sidebar trái + nội dung ---------- */
+.shell{display:flex;min-height:100vh}
+.rail{width:var(--rail);flex:none;display:flex;flex-direction:column;gap:4px;padding:20px 14px;border-right:1px solid var(--line);position:sticky;top:0;height:100vh}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;padding:0 8px 18px;flex:none}
+.logo svg{width:30px;height:15px;color:var(--ink)}
+.logo span{font-family:var(--display);font-weight:700;font-size:11px;line-height:1.15;letter-spacing:.02em}
+.rail nav{display:flex;flex-direction:column;gap:2px}
+.rail nav a{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:10px;text-decoration:none;font-size:13.5px;font-weight:500;color:var(--ink-2)}
+.rail nav a:hover{background:var(--hover);color:var(--ink)}
+.rail nav a[aria-current="page"]{background:var(--violet-soft);color:var(--violet-ink)}
+.rail .bottom{margin-top:auto}
+.pill{display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--muted);white-space:nowrap;padding:8px 12px}
+.pill::before{content:"";width:8px;height:8px;border-radius:999px;background:var(--faint);flex:none}
+.pill.on{color:#4ade80}.pill.on::before{background:#22c55e;box-shadow:0 0 8px #22c55e88}
+
+.content{flex:1;min-width:0}
+main{max-width:1100px;margin:0 auto;padding:30px 28px 70px}
+
+/* ---------- banner tạo dự án ---------- */
+.banner{border-radius:20px;background:linear-gradient(120deg,#6d5bff 0%,#8b6dff 45%,#b48bff 100%);padding:2px;margin:0 0 28px;cursor:pointer;border:0;width:100%;text-align:left;display:block}
+.banner-in{border-radius:18px;background:linear-gradient(120deg,rgba(13,13,18,.14),rgba(13,13,18,.32));padding:34px 30px;display:flex;align-items:center;gap:16px}
+.banner .plus{width:46px;height:46px;border-radius:999px;background:rgba(13,13,18,.28);display:flex;align-items:center;justify-content:center;flex:none;color:#fff}
+.banner h2{font-family:var(--display);font-size:22px;margin:0;color:#fff;letter-spacing:-.01em}
+.banner p{margin:3px 0 0;color:rgba(255,255,255,.82);font-size:13px}
+
+.err{background:#3a1f24;border:1px solid #5c2b33;color:#ffd4d4;border-radius:12px;padding:13px 16px;margin:0 0 20px;font-size:13.5px}
+
+.head{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:0 0 18px}
+h1{font-family:var(--display);font-size:20px;margin:0;letter-spacing:-.01em}
+.count{font-size:13px;color:var(--muted)}
+.search{position:relative;margin-left:auto}
+.search svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted)}
+.search input{height:38px;width:230px;border-radius:999px;border:1px solid var(--line);background:var(--surface-2);padding:0 16px 0 38px;font-size:13.5px}
+.search input:hover{border-color:var(--line-2)}
+.search input::placeholder{color:var(--faint)}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
+
+/* thẻ dự án */
+.card{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--surface);display:flex;flex-direction:column;transition:border-color .15s,transform .15s}
+.card:hover{border-color:var(--line-2);transform:translateY(-2px)}
+.card .thumb{position:relative;aspect-ratio:16/10;background:#101014 center/cover no-repeat;display:flex;align-items:center;justify-content:center;color:var(--faint);border:0;padding:0;width:100%}
+.card .thumb .ph{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11.5px}
+.card .dur{position:absolute;right:8px;bottom:8px;background:rgba(0,0,0,.75);color:#fff;font-size:11px;padding:2px 7px;border-radius:5px;font-variant-numeric:tabular-nums}
+.card .body{padding:11px 13px 13px;display:flex;flex-direction:column;gap:3px}
+.card .nm{font-weight:600;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card .meta{font-size:11.5px;color:var(--muted)}
+.card .acts{display:flex;gap:6px;margin-top:9px}
+.card .acts .btn{flex:1}
+
+.empty{grid-column:1/-1;text-align:center;color:var(--muted);padding:50px 20px;font-size:13.5px}
+
+dialog{border:1px solid var(--line);border-radius:18px;padding:22px;width:min(400px,92vw);background:var(--surface);color:var(--ink);box-shadow:0 30px 80px -20px rgba(0,0,0,.9)}
+dialog::backdrop{background:rgba(0,0,0,.62)}
+dialog h2{font-family:var(--display);font-size:17px;margin:0 0 6px}
+dialog p{margin:0 0 16px;font-size:13px;color:var(--muted)}
+dialog input{width:100%;height:42px;border-radius:11px;border:1px solid var(--line);background:var(--surface-2);padding:0 13px;font-size:14px;margin:0 0 16px}
+dialog .row{display:flex;justify-content:flex-end;gap:9px}
+.toast{position:fixed;left:50%;top:24px;transform:translateX(-50%) translateY(-12px);background:var(--solid-bg);color:var(--solid-ink);padding:11px 18px;border-radius:12px;font-size:13.5px;opacity:0;pointer-events:none;transition:.25s;z-index:200}
+.toast.show{opacity:1;transform:translateX(-50%)}
+
+@media (max-width:760px){
+  .shell{flex-direction:column}
+  .rail{position:static;height:auto;width:100%;flex-direction:row;align-items:center;border-right:0;border-bottom:1px solid var(--line);padding:12px 14px}
+  .logo{padding:0 10px 0 0}
+  .rail nav{flex-direction:row}
+  .rail .bottom{margin-top:0;margin-left:auto}
+}
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <aside class="rail">
+    <a class="logo" href="index.html" aria-label="Creative Motion Lab – Trang chủ">
+      <svg viewBox="0 0 56 28" aria-hidden="true"><path d="M15 2h11L16 14l10 12H15L4 14z" fill="currentColor"/><path d="M27 26 33 3l8 11 8-11 6 23h-7l-2-11-5 7-5-7-2 11z" fill="currentColor"/><path d="M41 14l8-11 2 8-5 4z" fill="currentColor" opacity=".45"/></svg>
+      <span>CREATIVE<br>MOTION LAB</span>
+    </a>
+    <nav>
+      <a href="index.html" aria-current="page"><svg class="icon sm" viewBox="0 0 24 24"><rect x="3" y="4" width="7" height="7" rx="1.5"/><rect x="14" y="4" width="7" height="7" rx="1.5"/><rect x="3" y="13" width="7" height="7" rx="1.5"/><rect x="14" y="13" width="7" height="7" rx="1.5"/></svg>Dự án</a>
+      <a href="editor.html"><svg class="icon sm" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/></svg>Trình dựng</a>
+      <a href="gioi-thieu.html"><svg class="icon sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>Giới thiệu</a>
+    </nav>
+    <div class="bottom">
+      <span class="pill" id="pill">Đang kết nối…</span>
+    </div>
+  </aside>
+
+  <div class="content">
+    <main>
+      <p class="err" id="err" hidden></p>
+
+      <button class="banner" type="button" id="btnNew">
+        <div class="banner-in">
+          <span class="plus"><svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span>
+          <div>
+            <h2>Tạo dự án</h2>
+            <p>Bắt đầu một bản dựng mới — kéo video vào là chỉnh sửa được ngay.</p>
+          </div>
+        </div>
+      </button>
+
+      <div class="head">
+        <h1>Dự án</h1>
+        <span class="count" id="count"></span>
+        <label class="search">
+          <svg class="icon sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <input id="q" type="search" placeholder="Tìm dự án…" aria-label="Tìm dự án">
+        </label>
+      </div>
+
+      <div class="grid" id="grid"></div>
+    </main>
+  </div>
+</div>
+
+<dialog id="dlg">
+  <form method="dialog" id="dlgForm">
+    <h2>Dự án mới</h2>
+    <p>Đặt tên để sau này dễ tìm lại.</p>
+    <input id="dlgName" required maxlength="80" placeholder="Ví dụ: Highlight game tuần này">
+    <div class="row">
+      <button class="btn btn-light" value="cancel" type="submit" formnovalidate>Hủy</button>
+      <button class="btn btn-solid" value="ok" type="submit">Tạo và mở</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const API = '';
+let PROJECTS = [];
+
+function esc(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function toast(msg) {
+  const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 2600);
+}
+async function api(method, path, body) {
+  const res = await fetch(API + path, {
+    method,
+    headers: body ? {'Content-Type': 'application/json', 'X-CML': '1'} : {'X-CML': '1'},
+    body: body ? JSON.stringify(body) : undefined
+  });
+  if (!res.ok) {
+    let detail = res.status + '';
+    try { const j = await res.json(); detail = (j.detail && (j.detail.error || j.detail)) || detail; } catch (e) {}
+    throw new Error(typeof detail === 'string' ? detail : JSON.stringify(detail));
+  }
+  return res.status === 204 ? null : res.json();
+}
+
+/* "2 phút trước", "3 giờ trước"… dễ đọc hơn dấu thời gian đầy đủ */
+function khiNao(ts) {
+  if (!ts) return 'chưa rõ';
+  const giay = Math.max(0, Date.now() / 1000 - ts);
+  if (giay < 60) return 'vừa xong';
+  const phut = Math.floor(giay / 60);
+  if (phut < 60) return phut + ' phút trước';
+  const gio = Math.floor(phut / 60);
+  if (gio < 24) return gio + ' giờ trước';
+  const ngay = Math.floor(gio / 24);
+  if (ngay === 1) return 'hôm qua';
+  if (ngay < 30) return ngay + ' ngày trước';
+  return new Date(ts * 1000).toLocaleDateString('vi-VN');
+}
+function thoiLuong(s) {
+  s = Math.round(s || 0);
+  return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
+}
+
+function ve() {
+  const tu = ($('#q').value || '').trim().toLowerCase();
+  const ds = tu ? PROJECTS.filter(p => (p.name || '').toLowerCase().includes(tu)) : PROJECTS;
+  $('#count').textContent = PROJECTS.length ? `${PROJECTS.length} dự án` : '';
+
+  const the = ds.map(p => {
+    const anh = p.thumb_media_id
+      ? `style="background-image:url('/api/editor/media/${encodeURIComponent(p.thumb_media_id)}/thumb')"`
+      : '';
+    const trong = p.thumb_media_id ? '' :
+      `<span class="ph"><svg class="icon" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 10l5 2-5 2z"/></svg>Chưa có video</span>`;
+    return `<article class="card">
+      <button class="thumb" ${anh} data-open="${esc(p.id)}" aria-label="Mở ${esc(p.name)}">
+        ${trong}<span class="dur">${thoiLuong(p.duration)}</span>
+      </button>
+      <div class="body">
+        <span class="nm" title="${esc(p.name)}">${esc(p.name)}</span>
+        <span class="meta">${khiNao(p.updated_at)} · ${p.clips} clip${p.texts ? ` · ${p.texts} khối chữ` : ''} · bản ${p.version}</span>
+        <div class="acts">
+          <button class="btn btn-light btn-sm" data-open="${esc(p.id)}" type="button">Mở</button>
+          <button class="btn btn-light btn-sm btn-danger" data-del="${esc(p.id)}" data-name="${esc(p.name)}" type="button">Xóa</button>
+        </div>
+      </div>
+    </article>`;
+  }).join('');
+
+  $('#grid').innerHTML = the || (tu
+    ? `<p class="empty">Không có dự án nào khớp “${esc(tu)}”.</p>`
+    : `<p class="empty">Chưa có dự án nào. Bấm “Tạo dự án” ở trên để bắt đầu.</p>`);
+}
+
+function moDuAn(id) {
+  // Trình dựng đọc mã dự án từ localStorage; đặt sẵn rồi mới chuyển trang,
+  // kèm ?pid= để không phụ thuộc hoàn toàn vào bộ nhớ trình duyệt.
+  try { localStorage.setItem('cml-ed:pid', JSON.stringify(id)); } catch (e) {}
+  location.href = 'editor.html?pid=' + encodeURIComponent(id);
+}
+
+async function nap() {
+  try {
+    const h = await api('GET', '/api/health');
+    $('#pill').className = 'pill on';
+    $('#pill').textContent = h.pending ? `Đã kết nối · ${h.pending} việc đang chạy` : 'Máy chủ đã kết nối';
+    $('#err').hidden = true;
+  } catch (e) {
+    $('#pill').className = 'pill';
+    $('#pill').textContent = 'Chưa kết nối máy chủ';
+    $('#err').hidden = false;
+    $('#err').textContent = 'Chưa chạy máy chủ. Nhấp đúp start.bat trong thư mục dự án rồi tải lại trang này.';
+    PROJECTS = []; ve();
+    return;
+  }
+  try {
+    PROJECTS = await api('GET', '/api/editor/projects');
+  } catch (e) {
+    PROJECTS = [];
+    $('#err').hidden = false;
+    $('#err').textContent = 'Không đọc được danh sách dự án: ' + e.message;
+  }
+  ve();
+}
+
+$('#btnNew').addEventListener('click', () => {
+  $('#dlgName').value = 'Dự án ' + new Date().toLocaleString('vi-VN', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'});
+  $('#dlg').showModal();
+});
+
+$('#grid').addEventListener('click', async ev => {
+  const mo = ev.target.closest('[data-open]');
+  if (mo) { moDuAn(mo.dataset.open); return; }
+
+  const xoa = ev.target.closest('[data-del]');
+  if (xoa) {
+    if (!confirm(`Xóa dự án “${xoa.dataset.name}”?\n\nCác file video, nhạc vẫn được giữ nguyên trong thư viện — chỉ bản dựng bị xóa. Không hoàn tác được.`)) return;
+    try {
+      await api('POST', `/api/editor/projects/${encodeURIComponent(xoa.dataset.del)}/delete`);
+      toast('Đã xóa dự án.');
+      await nap();
+    } catch (e) { toast('Xóa không được: ' + e.message); }
+  }
+});
+
+$('#dlgForm').addEventListener('submit', async ev => {
+  if (ev.submitter && ev.submitter.value !== 'ok') return;
+  const ten = ($('#dlgName').value || '').trim();
+  if (!ten) return;
+  try {
+    const r = await api('POST', '/api/editor/projects', {name: ten, width: 1080, height: 1920, fps: 30});
+    moDuAn(r.project.id);
+  } catch (e) { toast('Không tạo được dự án: ' + e.message); }
+});
+
+$('#q').addEventListener('input', ve);
+nap();
+setInterval(nap, 15000);   // tự làm mới để thấy việc đang chạy và dự án agent vừa sửa
+</script>
+</body>
+</html>

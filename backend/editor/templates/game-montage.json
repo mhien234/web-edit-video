@@ -1,0 +1,2 @@
+{"name": "Game · montage", "group": "game", "description": "Khung ngang, đổi cảnh mỗi 2 beat, màu lạnh.",
+ "mode": "beat", "beats_per_cut": 2, "min_clip": 0.4, "look": "cool", "width": 1920, "height": 1080, "fps": 60}

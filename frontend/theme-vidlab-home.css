@@ -1,0 +1,127 @@
+/* ============================================================
+   Creative Motion Lab – giao diện tối cho TRANG CHỦ (index.html)
+   ------------------------------------------------------------
+   Tách riêng khỏi theme-vidlab.css của trang editor: hai trang
+   dùng trùng tên lớp (.panel, .tl, .ctrl, .chip) nhưng nghĩa
+   khác nhau, gộp một file sẽ phá lẫn nhau.
+   Chỉ ghi đè màu. Bỏ dòng <link> nạp file này là về nền sáng.
+   ============================================================ */
+
+:root {
+  --bg: #0b0b0e;
+  --sunken: #0e0e12;
+  --surface: #16161b;
+  --surface-2: #1c1c22;
+  --hover: #24242b;
+
+  --ink: #ecedf1;
+  --ink-2: #c8cad2;
+  --muted: #8d8f9a;
+  --line: #272830;
+  --line-2: #34353f;
+
+  --dark: #1c1c22;      /* các thẻ "tối" sẵn có: nâng lên để tách khỏi nền */
+  --dark-2: #22222a;
+  --dark-3: #2a2b33;
+
+  --violet: #8b6dff;
+  --violet-ink: #a98cff;
+  --violet-soft: #2a2140;
+  --blue: #5b8cff;
+  --blue-soft: #16213d;
+  --teal: #2fc39a;
+  --amber: #fbbf24;
+
+  --solid-bg: #ecedf1;
+  --solid-ink: #0b0b0e;
+
+  color-scheme: dark;
+}
+
+body { background: var(--bg); color: var(--ink); }
+::selection { background: var(--violet); color: #fff; }
+
+* { scrollbar-color: var(--line-2) transparent; scrollbar-width: thin; }
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 999px; border: 2px solid transparent; background-clip: content-box; }
+*::-webkit-scrollbar-track { background: transparent; }
+
+/* ----- nút ----- */
+.btn-dark { background: var(--solid-bg); color: var(--solid-ink); }
+.btn-dark:hover { background: #fff; }
+.btn-light { background: var(--surface-2); border-color: var(--line); color: var(--ink); }
+.btn-light:hover { background: var(--hover); border-color: var(--line-2); }
+.btn-ghost-dark { border-color: var(--line-2); color: var(--ink); }
+.btn-ghost-dark:hover { background: var(--hover); }
+.icon-btn { background: var(--surface-2); border-color: var(--line); color: var(--ink); }
+.icon-btn:hover { background: var(--hover); border-color: var(--line-2); }
+
+.chip { background: var(--surface-2); border-color: var(--line); color: var(--ink); }
+.chip:hover { background: var(--hover); }
+.chip[aria-pressed="true"] { background: var(--solid-bg); border-color: var(--solid-bg); color: var(--solid-ink); }
+
+/* ----- thanh điều hướng, chân trang ----- */
+.site-header { background: rgba(14, 14, 18, .86); border-bottom: 1px solid var(--line); }
+.quality-chip { background: rgba(22, 22, 27, .9); border-color: var(--line); color: var(--ink); }
+.main-nav a { color: var(--ink-2); }
+.main-nav a:hover { background: var(--hover); color: var(--ink); }
+.main-nav a[aria-current="page"] { background: var(--solid-bg); color: var(--solid-ink); }
+.search input { background: var(--surface-2); border-color: var(--line); color: var(--ink); }
+.search input::placeholder { color: var(--muted); }
+.site-footer .social a:hover { background: var(--hover); }
+.brand, .logo { color: var(--ink); }
+
+/* ----- thẻ nội dung ----- */
+.fcard.light { background: var(--surface); border-color: var(--line); color: var(--ink); }
+.fcard.dark { background: var(--surface-2); border: 1px solid var(--line); }
+.fcard.dark p { color: var(--ink-2); }
+.vcard .thumb { background: #101014; }
+.tag-pill { background: var(--hover); color: var(--ink-2); }
+.bm:hover { background: var(--hover); }
+.panel { background: var(--surface); border-color: var(--line); }
+.tile { background: #101014; }
+
+/* ----- các bước, khuyến mãi ----- */
+.steps li::before { background: var(--hover); color: var(--ink-2); }
+.steps li.on::before { background: var(--solid-bg); color: var(--solid-ink); }
+.steps li.done::before { background: var(--violet); color: #fff; }
+.promo { background: var(--surface-2); border: 1px solid var(--line); }
+.promo a { border-color: var(--line-2); }
+.export-card { background: var(--surface-2); border: 1px solid var(--line); }
+
+/* ----- file, trình phát ----- */
+.file-row { background: var(--sunken); }
+.file-chip { background: var(--surface-2); border-color: var(--line); }
+.file-chip .ft { background: #101014; }
+.player { border: 1px solid var(--line); }
+
+/* ----- tab, hàng cài đặt ----- */
+.tabs button { color: var(--muted); }
+.tabs button:hover { color: var(--ink); }
+.row-setting { border-bottom-color: var(--line); }
+.range-row output { background: var(--surface-2); color: var(--ink); }
+
+/* ----- dòng thời gian minh họa ----- */
+.tl { background: var(--surface); border-color: var(--line); }
+.tl-bar .tb:hover { background: var(--hover); }
+.fx-pill { background: var(--violet-soft); border-color: #3b2f5c; color: var(--violet-ink); }
+.cut-mark { background: var(--ink); }
+
+/* ----- hộp thoại ----- */
+dialog.modal { background: var(--surface); color: var(--ink); box-shadow: 0 40px 120px rgba(0, 0, 0, .8); border: 1px solid var(--line); }
+dialog::backdrop { background: rgba(0, 0, 0, .62); }
+.stepper .st b { background: var(--hover); color: var(--ink-2); }
+.stepper .st.on b { background: var(--blue); color: #fff; }
+.info-box { background: var(--blue-soft); border-color: #27406e; }
+.info-box .ib-ic { background: var(--surface-2); color: #9dbcff; }
+
+.select { background: var(--surface-2); border-color: var(--line); color: var(--ink); }
+.select option { background: #1c1c22; color: var(--ink); }
+.sub-list { background: var(--surface); border-color: var(--line); }
+.sub-row textarea { background: transparent; color: var(--ink); }
+.sub-row textarea:focus { background: var(--surface-2); }
+.sub-row .round { background: var(--surface-2); border-color: var(--line); color: var(--ink); }
+.sub-row .del:hover { background: #3a1f24; }
+.add-sub { background: var(--surface-2); border-color: var(--line-2); color: var(--ink); }
+.level { background: var(--surface-2); border-color: var(--line); color: var(--ink); }
+.switch::after { background: var(--solid-bg); }

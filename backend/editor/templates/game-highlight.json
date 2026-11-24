@@ -1,0 +1,2 @@
+{"name": "Game · highlight", "group": "game", "description": "Khung ngang 16:9, đổi cảnh trên mỗi beat, màu đậm.",
+ "mode": "beat", "beats_per_cut": 1, "min_clip": 0.3, "look": "game-punch", "width": 1920, "height": 1080, "fps": 60}

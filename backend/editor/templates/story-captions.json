@@ -1,0 +1,2 @@
+{"name": "Kể chuyện · có phụ đề", "group": "story", "description": "Ghép các clip nối tiếp, lọc ồn giọng nói, phụ đề tự động.",
+ "mode": "sequence", "look": "warm", "captions": true, "language": "vi", "denoise": true, "width": 1080, "height": 1920, "fps": 30}

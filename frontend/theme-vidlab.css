@@ -1,0 +1,167 @@
+/* ============================================================
+   Creative Motion Lab – giao diện tối
+   ------------------------------------------------------------
+   Nạp SAU phần <style> có sẵn của trang, chỉ ghi đè màu sắc.
+   Không đụng tới bố cục, kích thước hay JavaScript: bỏ dòng
+   <link> nạp file này là trang trở lại nền sáng như cũ.
+
+   Bảng màu đi theo lối các trình dựng video hay dùng – nền rất
+   tối để mắt tập trung vào khung hình, các lớp panel sáng dần
+   theo độ gần người dùng, viền mảnh và nhạt.
+   ============================================================ */
+
+:root {
+  /* ----- nền, theo lớp: sâu nhất -> gần nhất ----- */
+  --bg: #0b0b0e;          /* nền ngoài cùng, sau khung xem */
+  --sunken: #0e0e12;      /* vùng lõm: sân khấu, dải icon */
+  --surface: #16161b;     /* mặt phẳng chính: panel, thẻ */
+  --surface-2: #1c1c22;   /* nổi hơn: ô nhập, nút nhạt */
+  --hover: #24242b;       /* khi rê chuột */
+
+  /* ----- chữ ----- */
+  --ink: #ecedf1;         /* chữ chính */
+  --ink-2: #c8cad2;       /* chữ phụ */
+  --muted: #8d8f9a;       /* nhãn, chú thích */
+  --faint: #5f616b;
+
+  /* ----- viền ----- */
+  --line: #272830;
+  --line-2: #34353f;
+
+  /* ----- màu nhấn (giữ tím của dự án) ----- */
+  --violet: #8b6dff;
+  --violet-ink: #a98cff;
+  --violet-soft: #2a2140;
+  --blue: #5b8cff;
+  --teal: #2fc39a;
+  --teal-soft: #11312a;
+  --amber: #fbbf24;
+  --amber-soft: #3a2e12;
+  --red: #ff6b6b;
+
+  /* nút "đậm": nền sáng chữ tối, đảo lại so với giao diện sáng */
+  --solid-bg: #ecedf1;
+  --solid-ink: #0b0b0e;
+
+  color-scheme: dark;
+}
+
+body { background: var(--bg); color: var(--ink); }
+::selection { background: var(--violet); color: #fff; }
+
+/* ----- thanh cuộn hợp tông ----- */
+* { scrollbar-color: var(--line-2) transparent; scrollbar-width: thin; }
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 999px; border: 2px solid transparent; background-clip: content-box; }
+*::-webkit-scrollbar-thumb:hover { background: #45464f; background-clip: content-box; }
+*::-webkit-scrollbar-track { background: transparent; }
+
+/* ----- nút ----- */
+.btn-dark { background: var(--solid-bg); color: var(--solid-ink); }
+.btn-dark:hover:not(:disabled) { background: #fff; }
+.btn-light { background: var(--surface-2); border-color: var(--line); color: var(--ink); }
+.btn-light:hover:not(:disabled) { background: var(--hover); border-color: var(--line-2); }
+.btn-violet { background: var(--violet); color: #fff; }
+.btn-violet:hover:not(:disabled) { background: #9d83ff; }
+
+.icon-btn { background: var(--surface-2); border-color: var(--line); color: var(--ink); }
+.icon-btn:hover:not(:disabled) { border-color: var(--line-2); background: var(--hover); }
+.icon-btn.plain { background: transparent; }
+.icon-btn.plain:hover:not(:disabled) { background: var(--hover); }
+.icon-btn[aria-pressed="true"] { background: var(--violet-soft); border-color: #3b2f5c; color: var(--violet-ink); }
+
+/* ----- ô nhập ----- */
+.input, .select, textarea.input {
+  background: var(--surface-2); border-color: var(--line); color: var(--ink);
+}
+.input:hover, .select:hover { border-color: var(--line-2); }
+.input::placeholder, textarea.input::placeholder { color: var(--faint); }
+.select option { background: #1c1c22; color: var(--ink); }
+input[type="color"] { padding: 3px; cursor: pointer; }
+input[type="range"] { accent-color: var(--violet); }
+
+/* ----- thanh trên cùng ----- */
+.top { background: rgba(14, 14, 18, .92); border-bottom-color: var(--line); backdrop-filter: blur(8px); }
+.logo { color: var(--ink); }
+.nav a { color: var(--ink-2); }
+.nav a:hover { background: var(--hover); color: var(--ink); }
+.nav a[aria-current="page"] { background: var(--solid-bg); color: var(--solid-ink); }
+.api-pill::before { background: var(--faint); }
+.api-pill.on { color: #4ade80; }
+.api-pill.on::before { background: #22c55e; box-shadow: 0 0 8px #22c55e88; }
+.agent-pill { background: var(--violet-soft); color: var(--violet-ink); }
+
+/* ----- vùng làm việc ----- */
+.work { background: var(--surface); }
+.rail { background: var(--sunken); border-right-color: var(--line); }
+.rail button { color: var(--muted); }
+.rail button:hover { background: var(--hover); color: var(--ink); }
+.rail button[aria-selected="true"] { background: var(--violet-soft); color: var(--violet-ink); }
+.panel { border-right-color: var(--line); background: var(--surface); }
+
+.drop { background: var(--sunken); border-color: var(--line-2); }
+.drop.over { background: var(--violet-soft); border-color: var(--violet); }
+.drop label { color: var(--violet-ink); }
+
+.card { background: var(--surface-2); border-color: var(--line); }
+.mcard { background: var(--surface-2); border-color: var(--line); }
+.mcard .th { background: #101014; color: var(--faint); }
+.mcard.audio .th { background: var(--teal-soft); color: #5eead4; }
+.mcard .add { background: var(--surface-2); color: var(--ink); box-shadow: 0 2px 10px rgba(0, 0, 0, .6); }
+.look { background: var(--surface-2); box-shadow: 0 0 0 1px var(--line); }
+.look .sw { background: #101014; }
+.look[aria-pressed="true"] { border-color: var(--violet); }
+
+/* ----- sân khấu xem trước ----- */
+.stage { background: var(--bg); }
+.frame { box-shadow: 0 0 0 1px var(--line), 0 20px 60px -24px rgba(0, 0, 0, .9); }
+.frame .blank { color: var(--faint); }
+.play { background: var(--violet); color: #fff; }
+.play:hover { background: #9d83ff; }
+
+/* ----- bảng thuộc tính ----- */
+.inspector { border-left-color: var(--line); background: var(--surface); }
+.ratios button { background: var(--surface-2); border-color: var(--line); color: var(--ink); }
+.ratios button:hover { border-color: var(--line-2); }
+.ratios button[aria-pressed="true"] { background: var(--solid-bg); border-color: var(--solid-bg); color: var(--solid-ink); }
+.hist li { border-bottom-color: var(--line); }
+.hist li.ai b { color: var(--violet-ink); }
+
+/* ----- timeline ----- */
+.timeline { background: var(--surface); border-top-color: var(--line); }
+.tl-bar { border-bottom-color: var(--line); }
+.tl-bar .sep { background: var(--line); }
+.tl .heads { background: var(--surface); border-right-color: var(--line); }
+.tl .ruler-head { background: var(--surface); border-bottom-color: var(--line); }
+.tl .head { border-bottom-color: var(--line); }
+.ruler { background: var(--surface); border-bottom-color: var(--line); }
+.ruler i { background: var(--line-2); }
+.ruler i.big { background: var(--muted); }
+.lane { border-bottom-color: var(--line); }
+.lane.drop-ok { background: var(--violet-soft); }
+
+/* Khối clip: nền tối vừa đủ để chữ trắng đọc được, viền sáng hơn một bậc. */
+.clip.video { background: #36305c; border-color: #4d4480; }
+.clip.audio { background: #14453a; border-color: #1d6b58; }
+.clip.text { background: #4a3a12; border-color: #7a601f; }
+.clip .lbl { background: rgba(0, 0, 0, .55); color: var(--ink); }
+.clip.sel { border-color: var(--ink); box-shadow: 0 0 0 1.5px var(--ink); }
+.clip.bad { border-color: var(--red); box-shadow: 0 0 0 1.5px var(--red); }
+.clip.sel .h { background: rgba(255, 255, 255, .22); }
+.playhead { background: var(--violet); box-shadow: 0 0 8px #8b6dffaa; }
+.playhead::before { border-top-color: var(--violet); }
+.snapline { background: var(--blue); }
+.tl-empty { color: var(--muted); }
+
+/* ----- việc chạy nền, thông báo, hộp thoại ----- */
+.job { background: var(--surface-2); border-color: var(--line); box-shadow: 0 24px 60px -20px rgba(0, 0, 0, .8); }
+.job p { color: var(--ink-2); }
+.job p.err { color: var(--red); }
+.job .tr { background: #2a2b33; }
+.job .tr i { background: var(--violet); }
+.toast { background: var(--solid-bg); color: var(--solid-ink); box-shadow: 0 18px 40px -16px rgba(0, 0, 0, .8); }
+dialog { background: var(--surface); color: var(--ink); box-shadow: 0 30px 80px -20px rgba(0, 0, 0, .9); border: 1px solid var(--line); }
+dialog::backdrop { background: rgba(0, 0, 0, .62); }
+.kbd { border-color: var(--line-2); color: var(--ink-2); background: var(--surface-2); }
+.empty { color: var(--muted); }
+.hint.err { color: var(--red); }

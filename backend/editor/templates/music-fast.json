@@ -1,0 +1,2 @@
+{"name": "Theo nhạc · nhanh", "group": "music", "description": "Đổi cảnh trên mỗi beat, màu teal-orange.",
+ "mode": "beat", "beats_per_cut": 1, "min_clip": 0.25, "look": "teal-orange", "width": 1080, "height": 1920, "fps": 30}

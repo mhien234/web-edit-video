@@ -25,6 +25,10 @@ CREATE TABLE IF NOT EXISTS versions (
     PRIMARY KEY (project_id, version));
 CREATE TABLE IF NOT EXISTS locks (
     project_id TEXT PRIMARY KEY, owner TEXT NOT NULL, expires_at REAL NOT NULL);
+CREATE TABLE IF NOT EXISTS media_uid (
+    media_id TEXT PRIMARY KEY, uid TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS project_uid (
+    project_id TEXT PRIMARY KEY, uid TEXT NOT NULL);
 """
 
 
@@ -166,6 +170,7 @@ class Store:
         """Bỏ một media khỏi thư viện. Xóa file trên đĩa là việc của EditorService."""
         with self._lock:
             self._db.execute("DELETE FROM media WHERE id=?", (media_id,))
+            self._db.execute("DELETE FROM media_uid WHERE media_id=?", (media_id,))
             self._db.commit()
 
     def media_in_use(self, media_id: str) -> list[str]:
@@ -189,7 +194,32 @@ class Store:
             self._db.execute("DELETE FROM versions WHERE project_id=?", (project_id,))
             self._db.execute("DELETE FROM locks WHERE project_id=?", (project_id,))
             self._db.execute("DELETE FROM projects WHERE id=?", (project_id,))
+            self._db.execute("DELETE FROM project_uid WHERE project_id=?", (project_id,))
             self._db.commit()
+
+    # ---- quyền riêng tư: mỗi trình duyệt (cookie) chỉ thấy media/dự án của mình -----
+    # Khi deploy công khai (Render...), mỗi khách có một "uid" ngẫu nhiên lưu trong cookie
+    # (xem get_uid trong api.py). Media/dự án tạo ra sau khi có tính năng này đều được gắn
+    # uid của người tạo. Dòng CHƯA có trong 2 bảng dưới (tạo từ trước, hoặc máy cá nhân
+    # chạy một mình ở localhost) coi như "không ai giữ riêng" -> vẫn hiện bình thường,
+    # để không phá luồng dùng một mình trên máy của chính chủ.
+    def set_media_uid(self, media_id: str, uid: str) -> None:
+        with self._lock:
+            self._db.execute("INSERT OR REPLACE INTO media_uid VALUES (?,?)", (media_id, uid))
+            self._db.commit()
+
+    def media_uid(self, media_id: str) -> str | None:
+        row = self._db.execute("SELECT uid FROM media_uid WHERE media_id=?", (media_id,)).fetchone()
+        return row[0] if row else None
+
+    def set_project_uid(self, project_id: str, uid: str) -> None:
+        with self._lock:
+            self._db.execute("INSERT OR REPLACE INTO project_uid VALUES (?,?)", (project_id, uid))
+            self._db.commit()
+
+    def project_uid(self, project_id: str) -> str | None:
+        row = self._db.execute("SELECT uid FROM project_uid WHERE project_id=?", (project_id,)).fetchone()
+        return row[0] if row else None
 
     # ---- edit locks (one agent writes at a time) ----------------------
     def acquire_lock(self, project_id: str, owner: str, ttl: float) -> bool:

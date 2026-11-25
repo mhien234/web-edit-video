@@ -11,6 +11,10 @@ COPY requirements.txt requirements-ai.txt ./
 RUN pip install --no-cache-dir -r requirements.txt \
     && pip install --no-cache-dir -r requirements-ai.txt
 
+# Tải sẵn model nhận diện giọng nói "base" lúc build, để lần đầu người dùng bấm
+# "Tạo phụ đề" không phải chờ tải model (và không tốn bộ nhớ lúc tải trên máy chủ nhỏ).
+RUN python -c "from faster_whisper import WhisperModel; WhisperModel('base', device='cpu', compute_type='int8')"
+
 COPY backend ./backend
 COPY frontend ./frontend
 

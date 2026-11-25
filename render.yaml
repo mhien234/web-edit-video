@@ -7,3 +7,25 @@ services:
     envVars:
       - key: PYTHONUNBUFFERED
         value: "1"
+      # Máy chủ miễn phí chỉ có ~512 MB RAM: model "small" làm máy chủ hết bộ nhớ và bị
+      # khởi động lại (mất sạch dữ liệu). "base" nhẹ hơn nhiều mà vẫn nghe tiếng Việt được.
+      - key: WHISPER_MODEL
+        value: base
+      # Giới hạn để máy chủ miễn phí không bị quá tải: clip tạo phụ đề tối đa 3 phút,
+      # mỗi file tải lên tối đa 150 MB, xuất video tối đa 1080p (2K/4K cần nhiều RAM hơn).
+      # Chạy trên máy cá nhân thì không có các giới hạn này.
+      - key: CML_MAX_AI_SECONDS
+        value: "180"
+      - key: CML_MAX_UPLOAD_MB
+        value: "150"
+      - key: CML_MAX_EXPORT
+        value: 1080p
+      # Máy chủ thấy cả chục nhân CPU của máy thật nhưng chỉ được dùng 0.1 nhân và 512 MB RAM.
+      # Để mặc định, FFmpeg/Whisper mở rất nhiều luồng, mỗi luồng giữ thêm bộ nhớ -> hết RAM.
+      - key: CML_FFMPEG_THREADS
+        value: "1"
+      - key: OMP_NUM_THREADS
+        value: "1"
+      # Không mã hóa lại video điện thoại ngay lúc tải lên (mất nhiều phút trên máy chủ yếu).
+      - key: CML_SKIP_CFR
+        value: "1"

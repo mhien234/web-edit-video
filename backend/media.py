@@ -54,6 +54,12 @@ def run_ffmpeg(args: list[str], *, duration: float | None = None,
                on_progress: Optional[ProgressFn] = None, cwd: Path | None = None) -> None:
     """Chạy FFmpeg; nếu biết thời lượng đầu ra thì báo tiến độ 0..1."""
     require_ffmpeg()
+    # Bản online (máy chủ miễn phí ~512 MB RAM, CPU rất yếu) đặt CML_FFMPEG_THREADS=1:
+    # mỗi luồng mã hóa giữ thêm khung hình trong bộ nhớ, nhiều luồng dễ làm máy chủ bị
+    # khởi động lại giữa chừng. Máy cá nhân không đặt biến này nên vẫn chạy hết tốc lực.
+    threads = os.environ.get("CML_FFMPEG_THREADS")
+    if threads and args:
+        args = ["-filter_threads", threads, *args[:-1], "-threads", threads, args[-1]]
     cmd = [FFMPEG, "-hide_banner", "-y", "-nostdin", "-loglevel", "error",
            "-progress", "pipe:1", *args]
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,

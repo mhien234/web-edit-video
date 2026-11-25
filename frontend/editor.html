@@ -445,6 +445,17 @@ body.first-run .rail button[data-pane="looks"]{opacity:.3;pointer-events:none}
   </form>
 </dialog>
 
+<dialog id="dlgExp">
+  <form method="dialog">
+    <h2>Xuất video</h2>
+    <span class="field"><span>Độ phân giải</span></span>
+    <div class="ratios" id="expQ" style="margin-bottom:8px"></div>
+    <p class="sub" id="expInfo" style="margin:0 0 6px;font-size:12.5px;color:var(--muted)"></p>
+    <p class="sub" id="expNote" style="margin:0 0 14px;font-size:12px;color:var(--muted)"></p>
+    <div class="acts"><button class="btn btn-light" value="cancel" formnovalidate>Hủy</button><button class="btn btn-violet" value="ok">Xuất video</button></div>
+  </form>
+</dialog>
+
 <script>
 (() => {
 'use strict';
@@ -583,7 +594,9 @@ function renderBin() {
 async function uploadFiles(files) {
   for (const f of files) {
     const j = jobCard('Tải lên: ' + f.name);
-    try { const m = await upload(f, p => j.set(p, Math.round(p * 100) + '%')); j.done('Đã thêm vào Media'); S.media[m.id] = m; }
+    /* Gửi xong 100% chưa phải là xong: máy chủ còn phải đọc và chuẩn hóa video.
+       Báo rõ để người dùng không tưởng web bị treo. */
+    try { const m = await upload(f, p => j.set(p, p < 1 ? Math.round(p * 100) + '%' : 'Đã gửi xong, máy chủ đang xử lý video... (có thể mất vài phút)')); j.done('Đã thêm vào Media'); S.media[m.id] = m; }
     catch (e) { j.fail(e.message); }
   }
   renderBin(); updateFirstRun();
@@ -1089,15 +1102,41 @@ function pollJob(id, card) {
     tick();
   });
 }
-$('#exportBtn').onclick = async () => {
+/* Xuất video: chọn độ phân giải. Số là chiều NGẮN của khung hình, nên dọc 9:16 ở 4K là 2160×3840. */
+const QUALITY = { '720p': 720, '1080p': 1080, '2k': 1440, '4k': 2160 };
+const QUALITY_LABEL = { '720p': '720p', '1080p': '1080p (Full HD)', '2k': '2K', '4k': '4K' };
+S.expMax = '4k'; S.expQ = store.get('expQ', '1080p');
+function expSize(q) {
+  const k = QUALITY[q] / Math.min(S.p.width, S.p.height);
+  return [Math.round(S.p.width * k / 2) * 2, Math.round(S.p.height * k / 2) * 2];
+}
+function renderExportDlg() {
+  const order = Object.keys(QUALITY), max = order.indexOf(S.expMax);
+  if (order.indexOf(S.expQ) > max) S.expQ = S.expMax;
+  $('#expQ').innerHTML = order.map((q, i) => `<button type="button" data-q="${q}" aria-pressed="${q === S.expQ}" ${i > max ? 'disabled style="opacity:.4;cursor:not-allowed"' : ''}>${QUALITY_LABEL[q]}</button>`).join('');
+  const [w, h] = expSize(S.expQ);
+  $('#expInfo').textContent = `Kích thước: ${w}×${h} · ${S.p.fps} fps`;
+  const nguon = Math.max(0, ...S.p.tracks.flatMap(t => t.clips).map(c => S.media[c.media_id]).filter(m => m && m.has_video).map(m => Math.min(m.width, m.height)));
+  $('#expNote').textContent = [
+    max < order.length - 1 ? `Bản web online xuất tối đa ${QUALITY_LABEL[S.expMax]} (máy chủ miễn phí ít bộ nhớ).` : '',
+    nguon && QUALITY[S.expQ] > nguon ? `Video gốc chỉ ${nguon}p: xuất cao hơn sẽ to file hơn nhưng không nét hơn.` : '',
+    QUALITY[S.expQ] >= 1440 ? 'Độ phân giải cao xuất lâu hơn đáng kể.' : ''].filter(Boolean).join(' ');
+  $$('#expQ button').forEach(b => b.onclick = () => { if (b.disabled) return; S.expQ = b.dataset.q; store.set('expQ', S.expQ); renderExportDlg(); });
+}
+$('#exportBtn').onclick = () => {
   if (!S.p || projDur() <= 0) { toast('Timeline trống, chưa có gì để xuất.'); return; }
-  stop(); const card = jobCard('Xuất video: ' + S.p.name);
-  try {
-    const { job_id } = await api('POST', `/api/editor/projects/${S.pid}/export`);
-    const j = await pollJob(job_id, card), url = API + j.result_url, x = j.extra || {};
-    card.done(`Xong · ${x.duration}s` + (x.black_seconds ? ` · ${x.black_seconds}s khung đen` : ''), `<a class="btn btn-dark btn-sm" href="${url}" download>Tải về</a><a class="btn btn-light btn-sm" href="${url}" target="_blank" rel="noopener">Xem</a>`);
-  } catch (e) { card.fail(e.message); }
+  renderExportDlg(); $('#dlgExp').showModal();
 };
+$('#dlgExp').addEventListener('close', async () => {
+  if ($('#dlgExp').returnValue !== 'ok') return;
+  const q = S.expQ, [w, h] = expSize(q);
+  stop(); const card = jobCard(`Xuất video ${QUALITY_LABEL[q]}: ${S.p.name}`);
+  try {
+    const { job_id } = await api('POST', `/api/editor/projects/${S.pid}/export`, { quality: q });
+    const j = await pollJob(job_id, card), url = API + j.result_url, x = j.extra || {};
+    card.done(`Xong · ${x.width || w}×${x.height || h} · ${x.duration}s` + (x.black_seconds ? ` · ${x.black_seconds}s khung đen` : ''), `<a class="btn btn-dark btn-sm" href="${url}" download>Tải về</a><a class="btn btn-light btn-sm" href="${url}" target="_blank" rel="noopener">Xem</a>`);
+  } catch (e) { card.fail(e.message); }
+});
 
 /* ---------------- Dự án mới ---------------- */
 $('#projSel').onchange = (e) => openProject(e.target.value).catch(err => toast(err.message));
@@ -1160,10 +1199,22 @@ async function boot() {
   if (!S.health) { $('#tl').innerHTML = '<div class="tl-empty" style="grid-column:1/-1">Chưa kết nối máy chủ. Chạy <b>start.bat</b> rồi mở <b>http://localhost:8000/editor.html</b>.</div>'; return; }
   try {
     S.looks = await api('GET', '/api/editor/looks');
+    try { S.expMax = (await api('GET', '/api/editor/export-qualities')).max; } catch (e) {}
     await loadMedia(); await loadProjects();
   } catch (e) { toast(e.message); }
   /* Mỗi giây hỏi xem có ai (AI agent) vừa sửa dự án không; rất nhẹ khi không có gì đổi. */
-  setInterval(() => { if (!S.drag && !S.busy && !document.hidden) refresh(false).then(ch => ch && loadMedia()).catch(() => {}); }, 1000);
+  setInterval(() => {
+    if (S.drag || S.busy || document.hidden) return;
+    refresh(false).then(ch => ch && loadMedia()).catch((e) => {
+      /* Máy chủ vừa khởi động lại (bản online miễn phí xóa sạch dữ liệu khi khởi động lại),
+         dự án đang mở không còn nữa: báo rõ ràng và mở lại danh sách, đừng để màn hình đứng im. */
+      if (e && (e.status === 404 || e.status === 400) && !S.reloading) {
+        S.reloading = true;
+        toast('Máy chủ vừa khởi động lại nên dự án cũ đã mất. Hãy tải video lên lại.');
+        loadMedia().then(() => loadProjects()).catch(() => {}).finally(() => { S.reloading = false; });
+      }
+    });
+  }, 1000);
   setInterval(checkHealth, 15000);
   setInterval(() => { if (!document.hidden) loadMedia().catch(() => {}); }, 5000);
 }

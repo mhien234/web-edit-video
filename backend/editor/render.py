@@ -86,9 +86,30 @@ def _ass_color(hex_color: str) -> str:
     return f"&H00{b}{g}{r}".upper()
 
 
-def build_args(project: Project, get_media: Callable[[str], Media], out_name: str, work_dir: Path) -> list[str]:
+# Độ phân giải xuất: số là chiều NGẮN của khung hình (dọc 9:16 hay ngang 16:9 đều đúng).
+QUALITIES: dict[str, int] = {"720p": 720, "1080p": 1080, "2k": 1440, "4k": 2160}
+QUALITY_ORDER = ["720p", "1080p", "2k", "4k"]
+
+
+def output_size(width: int, height: int, quality: str | None) -> tuple[int, int]:
+    """Giữ nguyên tỉ lệ khung hình của dự án, chỉ đổi độ lớn. Ví dụ 9:16 ở 4k -> 2160x3840.
+
+    Không chọn (None) thì xuất đúng kích thước của dự án như trước.
+    Cạnh luôn là số chẵn vì định dạng yuv420p bắt buộc như vậy.
+    """
+    if not quality:
+        return width, height
+    if quality not in QUALITIES:
+        raise RenderError(f"Độ phân giải không hỗ trợ: {quality}. Chọn một trong: {', '.join(QUALITY_ORDER)}.")
+    k = QUALITIES[quality] / min(width, height)
+    return int(round(width * k / 2)) * 2, int(round(height * k / 2)) * 2
+
+
+def build_args(project: Project, get_media: Callable[[str], Media], out_name: str, work_dir: Path,
+               size: tuple[int, int] | None = None) -> list[str]:
     """Trả về tham số FFmpeg (không gồm tên chương trình). Chạy với cwd=work_dir."""
-    W, H, fps = project.width, project.height, project.fps
+    W, H = size or (project.width, project.height)
+    fps = project.fps
     total = project.duration
     if total <= 0:
         raise RenderError("Timeline đang trống, chưa có gì để xuất.")
@@ -201,15 +222,24 @@ def build_args(project: Project, get_media: Callable[[str], Media], out_name: st
 
 
 def export(project: Project, get_media: Callable[[str], Media], work_dir: Path,
-           report: Callable[[float, str], None] | None = None) -> tuple[Path, dict]:
+           report: Callable[[float, str], None] | None = None, quality: str | None = None) -> tuple[Path, dict]:
     work_dir.mkdir(parents=True, exist_ok=True)
     out = work_dir / "video.mp4"
-    args = build_args(project, get_media, out.name, work_dir)
+    W, H = output_size(project.width, project.height, quality)
+    args = build_args(project, get_media, out.name, work_dir, (W, H))
+    nhan = f"Đang xuất video {quality} ({W}×{H})" if quality else "Đang xuất video"
     media.run_ffmpeg(args, duration=project.duration, cwd=work_dir,
-                     on_progress=(lambda f: report(0.02 + 0.9 * f, "Đang xuất video")) if report else None)
+                     on_progress=(lambda f: report(0.02 + 0.9 * f, nhan)) if report else None)
     if report:
         report(0.95, "Đang kiểm tra file xuất ra")
-    return out, verify(out, project.duration)
+    result = verify(out, project.duration)
+    # Kiểm tra file xuất ra đúng độ phân giải đã chọn, không chỉ tin vào tham số đã truyền.
+    v = next((s for s in media.probe(out).get("streams", []) if s.get("codec_type") == "video"), {})
+    if (v.get("width"), v.get("height")) != (W, H):
+        result["ok"] = False
+        result["problems"].append(f"kích thước {v.get('width')}x{v.get('height')}, mong đợi {W}x{H}")
+    result["width"], result["height"], result["quality"] = W, H, quality or f"{min(W, H)}p"
+    return out, result
 
 
 def verify(path: Path, expected: float) -> dict:

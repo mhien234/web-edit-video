@@ -6,6 +6,7 @@ timeline đều đi qua EditorCore, nên người và agent luôn sửa cùng m�
 from __future__ import annotations
 
 import json
+import os
 import shutil
 from pathlib import Path
 
@@ -50,7 +51,10 @@ class EditorService:
         (shutil.move if move else shutil.copy2)(str(source), str(dest))
         try:
             info = describe(dest)
-            if info["variable_fps"]:
+            # Bản online (máy chủ miễn phí rất yếu) bỏ bước này: mã hóa lại cả video điện thoại
+            # ngay lúc tải lên mất nhiều phút và dễ làm máy chủ hết bộ nhớ. Bước xuất video
+            # vẫn ép về đúng số khung hình/giây (bộ lọc fps trong render.py) nên video vẫn đúng.
+            if info["variable_fps"] and not os.environ.get("CML_SKIP_CFR"):
                 # Video quay điện thoại/game hay có tốc độ khung hình thay đổi: điểm cắt sẽ trôi khỏi beat.
                 cfr = self.media_dir / f"{mid}_cfr.mp4"
                 media.run_ffmpeg(["-i", str(dest), "-vf", "fps=30", "-c:v", "libx264", "-preset", "veryfast",
@@ -192,7 +196,7 @@ class EditorService:
     # ------------------------------------------------------------ xuất video (chạy trong hàng đợi việc)
     def render_job(self, ctx: JobContext) -> dict:
         p, version = self.core.get(ctx.params["project_id"])
-        out, report = render.export(p, self.store.get_media, ctx.dir, ctx.report)
+        out, report = render.export(p, self.store.get_media, ctx.dir, ctx.report, ctx.params.get("quality"))
         if not report["ok"]:
             raise media.MediaError("File xuất ra có vấn đề: " + "; ".join(report["problems"]))
         return {"file": out, "extra": {**report, "project_id": p.id, "version": version}}

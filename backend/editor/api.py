@@ -5,6 +5,7 @@ không gửi được. Mở /docs trên máy chủ để bấm thử từng API.
 """
 from __future__ import annotations
 
+import os
 import secrets
 import shutil
 import tempfile
@@ -18,7 +19,15 @@ from pydantic import BaseModel
 from ..media import MediaError
 from .core import CommandError, Locked, VersionConflict
 from .looks import LOOKS
+from .render import QUALITIES, QUALITY_ORDER
 from .service import EditorService, load_templates
+
+
+def max_export_quality() -> str:
+    """Độ phân giải cao nhất được phép xuất. Bản online (máy chủ miễn phí ~512 MB RAM) đặt
+    CML_MAX_EXPORT=1080p vì xuất 2K/4K cần nhiều bộ nhớ hơn mức đó; máy cá nhân xuất được tới 4K."""
+    q = (os.environ.get("CML_MAX_EXPORT") or "4k").lower()
+    return q if q in QUALITIES else "4k"
 
 MIME = {".mp4": "video/mp4", ".m4v": "video/mp4", ".mov": "video/quicktime", ".webm": "video/webm",
         ".mkv": "video/x-matroska", ".avi": "video/x-msvideo", ".mp3": "audio/mpeg", ".wav": "audio/wav",
@@ -133,6 +142,10 @@ class BeatCutIn(BaseModel):
     actor: str = "user"
 
 
+class ExportIn(BaseModel):
+    quality: str | None = None      # "720p" | "1080p" | "2k" | "4k"; bỏ trống = đúng kích thước dự án
+
+
 class TemplateIn(BaseModel):
     template: str
     source_ids: list[str]
@@ -183,6 +196,11 @@ def make_router(svc: EditorService) -> APIRouter:
         suffix = Path(file.filename or "file").suffix.lower()
         with tempfile.NamedTemporaryFile(delete=False, suffix=suffix, dir=svc.media_dir) as tmp:
             shutil.copyfileobj(file.file, tmp)
+        # Bản online (máy chủ miễn phí, ổ đĩa nhỏ) đặt CML_MAX_UPLOAD_MB để chặn file quá nặng.
+        gioi_han = float(os.environ.get("CML_MAX_UPLOAD_MB") or 0)
+        if gioi_han and Path(tmp.name).stat().st_size > gioi_han * 1024 * 1024:
+            Path(tmp.name).unlink(missing_ok=True)
+            raise HTTPException(413, {"error": f"File quá lớn. Bản web online nhận tối đa {int(gioi_han)} MB mỗi file."})
         try:
             m = svc.import_file(Path(tmp.name), file.filename, move=True)
             svc.store.set_media_uid(m.id, uid)
@@ -341,16 +359,28 @@ def make_router(svc: EditorService) -> APIRouter:
             fail(e)
 
     @r.post("/projects/{pid}/export", dependencies=write)
-    def export(pid: str, uid: str = Depends(get_uid)):
+    def export(pid: str, body: ExportIn | None = None, uid: str = Depends(get_uid)):
         """Xuất MP4 trong hàng đợi việc chung. Theo dõi bằng GET /api/jobs/{job_id}."""
         _guard_project(pid, uid)
+        quality = (body.quality or "").lower() if body and body.quality else None
+        if quality and quality not in QUALITIES:
+            raise HTTPException(400, {"error": f"Độ phân giải không hỗ trợ: {quality}."})
+        toi_da = max_export_quality()
+        if quality and QUALITY_ORDER.index(quality) > QUALITY_ORDER.index(toi_da):
+            raise HTTPException(400, {"error": f"Bản web online chỉ xuất tối đa {toi_da.upper()} (máy chủ miễn phí ít bộ nhớ). "
+                                               f"Chạy trên máy cá nhân để xuất {quality.upper()}."})
         try:
             svc.core.get(pid)
         except Exception as e:  # noqa: BLE001
             fail(e)
         job_id, _ = svc.jobs.new_job_dir()
-        svc.jobs.submit(job_id, "render", {"project_id": pid})
+        svc.jobs.submit(job_id, "render", {"project_id": pid, "quality": quality})
         return {"job_id": job_id, "status_url": f"/api/jobs/{job_id}"}
+
+    @r.get("/export-qualities")
+    def export_qualities():
+        """Các mức độ phân giải và mức cao nhất máy chủ này cho phép (để giao diện khóa nút quá mức)."""
+        return {"qualities": QUALITY_ORDER, "max": max_export_quality()}
 
     @r.get("/templates")
     def templates():

@@ -326,5 +326,11 @@ def run(ctx: JobContext) -> dict:
     if ctx.params.get("mode") == "transcribe":
         if not has_stream(src, "audio"):
             raise MediaError("Video này không có âm thanh nên không tạo được phụ đề.")
+        # Máy chủ miễn phí trên cloud chỉ có ~512 MB RAM: nghe một video quá dài sẽ làm
+        # máy chủ hết bộ nhớ, bị khởi động lại và mất sạch dữ liệu. Chặn trước, báo rõ ràng.
+        gioi_han = float(os.environ.get("CML_MAX_AI_SECONDS") or 0)
+        if gioi_han and duration_of(src) > gioi_han:
+            raise MediaError(f"Bản web online chỉ tạo phụ đề cho clip dài tối đa {int(gioi_han // 60)} phút "
+                             f"(máy chủ miễn phí ít bộ nhớ). Hãy cắt clip ngắn lại rồi thử lại.")
         return transcribe(ctx, src)
     return apply(ctx, src)
